@@ -36,7 +36,7 @@ public class EWSConnect {
     public static void main(String[] args) throws URISyntaxException, ServiceLocalException, Exception {
         // TODO code application logic here
         ExchangeService service = new ExchangeService();
-        ExchangeCredentials credentials = new WebCredentials("makepositive@resilientplc.com", "P0s1t1v3");
+        ExchangeCredentials credentials = new WebCredentials("makepositive@resilientplc.com", "########");
         service.setCredentials(credentials);
         URI uri = new URI("https://webmail.resilientplc.com/ews/exchange.asmx");
         service.setUrl(uri);
