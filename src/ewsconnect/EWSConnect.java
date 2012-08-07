@@ -36,7 +36,7 @@ public class EWSConnect {
             email.update(ConflictResolutionMode.AlwaysOverwrite);
         }
         */
-        File file = new File("C:\\Users\\Nimil\\Documents\\NetBeansProjects\\EWSConnect\\PDFS");
+        File file = new File("C:/PDFs");
         EWSConnection ewsConnect = new EWSConnection();
         ewsConnect.processFolder(file);
     }

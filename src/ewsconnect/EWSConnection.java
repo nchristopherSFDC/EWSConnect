@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import microsoft.exchange.webservices.data.EmailMessage;
 import microsoft.exchange.webservices.data.ExchangeCredentials;
 import microsoft.exchange.webservices.data.ExchangeService;
@@ -23,13 +25,21 @@ import microsoft.exchange.webservices.data.WebCredentials;
 public class EWSConnection {
 
     public static ExchangeService service = null;
+    public static boolean processedFile = false;
+    public static boolean movedFile = false;
 
-    private static void process(File dir) throws IOException, Exception {
-        PdfReader ReadInputPDF = new PdfReader(dir.getAbsolutePath());
-        HashMap<String, String> metaDataInfo = ReadInputPDF.getInfo();
-        System.out.println(metaDataInfo.get("Keywords"));
-        sendEmail(dir.getAbsolutePath(),metaDataInfo.get("Keywords"));
-        /* dumping metadata on the screen */
+    private static boolean process(File dir) {
+        try {
+            PdfReader ReadInputPDF = new PdfReader(dir.getAbsolutePath());
+            HashMap<String, String> metaDataInfo = ReadInputPDF.getInfo();
+            System.out.println(metaDataInfo.get("Keywords"));
+            sendEmail(dir.getAbsolutePath(),metaDataInfo.get("Keywords"));
+            return true;
+            /* dumping metadata on the screen */
+        } catch (Exception ex) {
+            Logger.getLogger(EWSConnection.class.getName()).log(Level.SEVERE, "Exception while sending email : ", ex);
+            return false;
+        } 
         
     }
 
@@ -45,19 +55,27 @@ public class EWSConnection {
     public static void sendEmail(String path,String Email) throws Exception {
         //Send Email 
         EmailMessage msg = new EmailMessage(service);
-        msg.setSubject("Hello world!");
+        msg.setSubject("Itemisation Report - ResilientPLC");
         msg.setBody(MessageBody.getMessageBodyFromText("Sent using the EWS Managed API."));
         msg.getToRecipients().add(Email);
         msg.getAttachments().addFileAttachment(path);
         msg.send();
     }
 
-    public static void processFolder(File dir) throws IOException, Exception {
+    public static void processFolder(File dir)  {
         if (dir.isDirectory()) {
             String[] children = dir.list();
+            File file = null;
+            File archiveDir = new File("C:/Archive");
+            File errorDir = new File("C:/Error");
             for (int i = 0; i < children.length; i++) {
-                System.out.println(dir.getAbsoluteFile()+"\\"+children[i]);
-                process(new File(dir.getAbsoluteFile()+"\\"+children[i]));
+                file = new File(dir.getAbsoluteFile()+"\\"+children[i]);
+                processedFile = process(file);
+                if (processedFile){
+                    movedFile = file.renameTo(new File(archiveDir, file.getName()));
+                }else{
+                    movedFile = file.renameTo(new File(errorDir, file.getName()));
+                }
             }
         }
     }
